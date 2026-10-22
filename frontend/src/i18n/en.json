@@ -1,0 +1,71 @@
+{
+  "app": {
+    "name": "AgriAI",
+    "tagline": "Smart farming guidance for Indian farmers"
+  },
+  "nav": {
+    "dashboard": "Dashboard",
+    "myFarm": "My Farm",
+    "soil": "Soil",
+    "yield": "Yield",
+    "market": "Market Advisor",
+    "forecast": "Forecast",
+    "history": "History",
+    "settings": "Settings"
+  },
+  "welcome": {
+    "title": "Welcome to AgriAI",
+    "subtitle": "Get yield estimates, market guidance, and crop advice",
+    "getStarted": "Get Started",
+    "learnMore": "Learn More"
+  },
+  "dashboard": {
+    "currentCrop": "Current Crop",
+    "fieldArea": "Field Area",
+    "expectedYield": "Expected Yield",
+    "expectedProduction": "Expected Production",
+    "mspReference": "MSP Reference",
+    "bestMarket": "Best Available Market",
+    "dataFreshness": "Data Freshness"
+  },
+  "yield": {
+    "title": "Expected Yield",
+    "range": "Expected Range",
+    "production": "Expected Production",
+    "factors": "What is affecting your prediction?",
+    "supporting": "Factors supporting the prediction",
+    "limiting": "Factors limiting the prediction",
+    "disclaimer": "This is an estimated prediction based on available data, not a guaranteed yield."
+  },
+  "market": {
+    "title": "Market Advisor",
+    "compare": "Market Comparison",
+    "recommend": "Recommended Markets",
+    "market": "Market",
+    "modalPrice": "Modal Price",
+    "mspReference": "MSP Reference",
+    "transportCost": "Transport Cost",
+    "estimatedNet": "Estimated Net Price",
+    "distance": "Distance",
+    "dataDate": "Data Date",
+    "stale": "Stale Data",
+    "insufficient": "Insufficient historical data for reliable forecast."
+  },
+  "common": {
+    "loading": "Loading...",
+    "error": "Something went wrong",
+    "retry": "Retry",
+    "cancel": "Cancel",
+    "save": "Save",
+    "continue": "Continue",
+    "back": "Back",
+    "next": "Next",
+    "language": "Language",
+    "rupees": "₹",
+    "perQuintal": "/quintal",
+    "perHectare": "/hectare",
+    "tonnes": "tonnes",
+    "days": "days",
+    "km": "km"
+  }
+}

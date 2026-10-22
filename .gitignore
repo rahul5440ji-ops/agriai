@@ -1,0 +1,97 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+pip-wheel-metadata/
+
+# Virtual environments
+.venv/
+env/
+ENV/
+
+# Python tooling caches
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.hypothesis/
+.tox/
+.nox/
+.coverage
+coverage.xml
+htmlcov/
+*.cover
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.claude/settings.local.json
+
+# Environment
+.env
+.env.*
+!.env.example
+
+# Secrets
+*.key
+*.pem
+credentials.json
+
+# Database
+*.db
+*.sqlite
+*.sqlite3
+*.db-*
+*.sqlite-*
+
+# ML artifacts (trained models - load from source, not develop branch)
+models/
+
+# Data
+data/raw/
+data/datasets/*.parquet
+data/datasets/*.csv
+
+# Logs
+*.log
+logs/
+
+# OS
+.DS_Store
+Thumbs.db
+.directory
+
+# Frontend
+node_modules/
+frontend/node_modules/
+frontend/dist/
+
+# Local scratch projects
+temp_data/
+temp_jsx/
+
+# Temporary files
+*.tmp
+*.temp
+*.bak
+*.orig
+*.rej

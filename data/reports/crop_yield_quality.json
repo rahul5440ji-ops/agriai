@@ -1,0 +1,30 @@
+{
+  "source": "agriculture_ai_integrated_project",
+  "rows": 220,
+  "columns": 5,
+  "column_names": [
+    "crop",
+    "season",
+    "year",
+    "area_source_value",
+    "yield_kg_per_ha"
+  ],
+  "duplicate_rows": 0,
+  "missing_by_column": {
+    "crop": 0,
+    "season": 0,
+    "year": 0,
+    "area_source_value": 0,
+    "yield_kg_per_ha": 0
+  },
+  "unique_values_by_column": {
+    "crop": 28,
+    "season": 3,
+    "year": 5,
+    "area_source_value": 211,
+    "yield_kg_per_ha": 209
+  },
+  "negative_yields": 0,
+  "zero_yields": 0,
+  "negative_area": 0
+}
