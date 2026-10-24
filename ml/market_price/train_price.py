@@ -48,6 +48,7 @@ from ml.common.model_manager import (
     save_model_to_file,
     register_model,
 )
+from backend.database import SessionLocal
 from ml.market_price.features_price import (
     build_price_features,
     get_feature_columns,
@@ -206,21 +207,15 @@ def train_single_series(
 
     # Train models
     models = {
-        "Naive": _create_naive_model(train_df, target_col, forecast_horizon),
-        "MovingAverage": _create_moving_avg_model(train_df, target_col),
+        "Naive": _create_naive_model(train_df, target_col, len(val_df)),
+        "MovingAverage": _create_moving_avg_model(train_df, target_col, len(val_df)),
         "Ridge": Ridge(alpha=1.0, random_state=42),
         "RandomForest": RandomForestRegressor(
-            n_estimators=100,
-            max_depth=10,
-            min_samples_split=5,
+            n_estimators=25,
+            max_depth=6,
+            min_samples_split=4,
             random_state=42,
             n_jobs=-1
-        ),
-        "GradientBoosting": GradientBoostingRegressor(
-            n_estimators=100,
-            learning_rate=0.1,
-            max_depth=6,
-            random_state=42
         )
     }
 
@@ -229,7 +224,7 @@ def train_single_series(
     for name, model in models.items():
         if name in ["Naive", "MovingAverage"]:
             # These are pre-computed predictions
-            y_val_pred = model
+            y_val_pred = np.array(model)
         else:
             # Create preprocessing pipeline
             numeric_features = X_train.select_dtypes(include=[np.number]).columns.tolist()
@@ -257,7 +252,7 @@ def train_single_series(
         results[name] = {
             "model": model,
             "val_metrics": val_metrics,
-            "predictions": y_val_pred.tolist(),
+            "predictions": y_val_pred.tolist() if hasattr(y_val_pred, "tolist") else list(y_val_pred),
         }
 
         logger.info("  %s: MAE=%.2f, RMSE=%.2f, R²=%.4f",
@@ -303,10 +298,11 @@ def _create_naive_model(train_df: pd.DataFrame, target_col: str, horizon: int) -
     return [last_values[-1]] * horizon
 
 
-def _create_moving_avg_model(train_df: pd.DataFrame, target_col: str) -> float:
+def _create_moving_avg_model(train_df: pd.DataFrame, target_col: str, horizon: int = 7) -> list:
     """Create moving average forecast."""
     window = min(30, len(train_df))
-    return float(train_df[target_col].tail(window).mean())
+    avg_val = float(train_df[target_col].tail(window).mean())
+    return [avg_val] * horizon
 
 
 def _calculate_confidence(val_metrics: dict) -> float:

@@ -3,7 +3,14 @@ from sqlalchemy import text
 from sqlalchemy.orm import Session
 from backend.database import get_db
 from backend.models import Crop, MspPrice
-from backend.schemas import MarketComparisonItem, MarketRecommendationItem, CropResponse, MspReferenceResponse
+from typing import Optional
+from backend.schemas import (
+    MarketComparisonItem,
+    MarketRecommendationItem,
+    MarketRecommendationRequest,
+    CropResponse,
+    MspReferenceResponse,
+)
 from backend.services.market_service import compare_markets, recommend_markets
 
 router = APIRouter()
@@ -31,7 +38,6 @@ def compare_markets_endpoint(
             transport_cost=transport_cost,
             other_costs=other_costs,
         )
-        # Convert to MarketComparisonItem objects for response
         return [
             MarketComparisonItem(
                 market=item.get("market", ""),
@@ -53,8 +59,9 @@ def compare_markets_endpoint(
 
 @router.post("/markets/recommend")
 def recommend_markets_endpoint(
-    crop: str,
-    state: str,
+    body: Optional[MarketRecommendationRequest] = None,
+    crop: Optional[str] = None,
+    state: Optional[str] = None,
     district: str = "",
     transport_cost_per_quintal: float = 0.0,
     other_costs: float = 0.0,
@@ -63,18 +70,29 @@ def recommend_markets_endpoint(
 ):
     """Rank potentially better selling markets.
 
-    Returns ranked market recommendations based on net price,
-    distance, data freshness, quality, and forecast confidence.
+    Accepts parameters via JSON body or query parameters.
     """
+    target_crop = body.crop if body else (crop or "")
+    target_state = body.state if body else (state or "")
+    target_district = (body.district if body else district) or ""
+    target_transport = (
+        body.transport_cost_per_quintal if body else transport_cost_per_quintal
+    )
+    target_other = body.other_costs if body else other_costs
+    target_max_dist = body.max_distance_km if body else max_distance_km
+
+    if not target_crop or not target_state:
+        raise HTTPException(status_code=422, detail="Crop and state are required")
+
     try:
         result = recommend_markets(
             db=db,
-            crop_name=crop,
-            state=state,
-            district=district,
-            transport_cost_per_quintal=transport_cost_per_quintal,
-            other_costs=other_costs,
-            max_distance_km=max_distance_km,
+            crop_name=target_crop,
+            state=target_state,
+            district=target_district,
+            transport_cost_per_quintal=target_transport,
+            other_costs=target_other,
+            max_distance_km=target_max_dist,
         )
         return [MarketRecommendationItem(**item) for item in result]
     except Exception as exc:  # pragma: no cover - defensive

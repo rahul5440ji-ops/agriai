@@ -44,7 +44,7 @@ htmlcov/
 *.swp
 *.swo
 *~
-.claude/settings.local.json
+.claude/
 
 # Environment
 .env
@@ -64,7 +64,8 @@ credentials.json
 *.sqlite-*
 
 # ML artifacts (trained models - load from source, not develop branch)
-models/
+models/*
+!models/.gitkeep
 
 # Data
 data/raw/

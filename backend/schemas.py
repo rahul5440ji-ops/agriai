@@ -110,6 +110,15 @@ class MarketComparisonItem(BaseModel):
 
 
 # --- Market Recommendation ---
+class MarketRecommendationRequest(BaseModel):
+    crop: str
+    state: str
+    district: Optional[str] = ""
+    transport_cost_per_quintal: float = 0.0
+    other_costs: float = 0.0
+    max_distance_km: float = 500.0
+
+
 class MarketRecommendationItem(BaseModel):
     rank: int
     market: str

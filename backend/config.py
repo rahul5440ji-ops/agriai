@@ -16,9 +16,14 @@ class Settings(BaseSettings):
 
     database_url: str
     app_host: str = "0.0.0.0"
-    app_port: int = 8000
-    cors_origins: list = ["http://localhost:3000"]
-    secret_key: str = "change-me-in-production"
+    cors_origins: list = [
+        "http://localhost:3000",
+        "http://localhost:5173",
+        "http://127.0.0.1:5173",
+        "http://localhost:5174",
+        "http://127.0.0.1:5174",
+        "http://localhost:4173",
+    ]
 
     # ML
     ml_models_path: str = "./models"
