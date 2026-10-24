@@ -14,8 +14,9 @@ class Settings(BaseSettings):
         env_file_encoding="utf-8",
     )
 
-    database_url: str
+    database_url: str = "sqlite:///./agriai.db"
     app_host: str = "0.0.0.0"
+    app_port: int = 8000
     cors_origins: list = [
         "http://localhost:3000",
         "http://localhost:5173",
@@ -23,6 +24,7 @@ class Settings(BaseSettings):
         "http://localhost:5174",
         "http://127.0.0.1:5174",
         "http://localhost:4173",
+        "*"
     ]
 
     # ML
