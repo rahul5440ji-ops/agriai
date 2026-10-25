@@ -43,7 +43,7 @@ sqlalchemy = { version = ">=2.0.0", extras = ["asyncio"] }
 
 [tool.poetry.scripts]
 agriai = "backend.app:main"
-run-tests = "pytest"
+run-tests = "pytest:console_main"
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
