@@ -22,7 +22,7 @@ React Frontend (mobile-first, en/hi)
    ┌────┴────┬──────────┐
    │         │          │
    ▼         ▼          ▼
-SQLite     ML        Market/Data
+SQLite (dev) / PostgreSQL (production)     ML        Market/Data
            Inference  Adapters
               │
    ┌──────────┴──────────┐
@@ -79,6 +79,12 @@ Yield Model          Price Model
 - `docs/` — Architecture, data sources, deployment
 - `scripts/` — initialization, data ingestion, migration
 - `tests/` — API, models, market calculations
+
+## Deploy to Vercel
+
+The repository is configured as a Vercel Services project with a FastAPI API
+and a Vite frontend on the same domain. See [Vercel deployment instructions](docs/DEPLOYMENT.md)
+for the required PostgreSQL connection, migrations, and model-artifact setup.
 
 ## Safety & Honesty Rules
 

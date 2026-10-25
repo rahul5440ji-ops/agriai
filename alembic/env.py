@@ -19,6 +19,8 @@ if config.config_file_name is not None:
 # add your model's MetaData object here
 # for 'autogenerate' support
 from backend.models import Base  # noqa: E402
+from backend.database import normalize_database_url  # noqa: E402
+
 target_metadata = Base.metadata
 
 # other values from the config, defined by the needs of env.py,
@@ -59,10 +61,8 @@ def run_migrations_online() -> None:
 
     """
     configuration = config.get_section(config.config_ini_section, {})
-    configuration["sqlalchemy.url"] = os.getenv(
-        "DATABASE_URL",
-        configuration.get("sqlalchemy.url")
-    )
+    database_url = os.getenv("DATABASE_URL", configuration.get("sqlalchemy.url"))
+    configuration["sqlalchemy.url"] = normalize_database_url(database_url)
     connectable = engine_from_config(
         configuration,
         prefix="sqlalchemy.",

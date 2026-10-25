@@ -15,7 +15,7 @@ React Frontend (mobile-first, en/hi)
    ┌────┴────┬──────────┐
    │         │          │
    ▼         ▼          ▼
-SQLite     ML        Market/Data
+SQLite (dev) / PostgreSQL (production)     ML        Market/Data
            Inference  Adapters
               │
    ┌──────────┴──────────┐
