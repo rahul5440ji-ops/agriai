@@ -26,16 +26,20 @@ dependencies = [
     "shap>=0.45.0",
 ]
 
-[tool.poetry.group.dev]
-dependencies = [
-    "pytest>=8.2.0",
-    "httpx>=0.27.0",
-    "pytest-asyncio>=0.23.0",
-    "black>=24.3.0",
-    "ruff>=0.8.0",
-    "mypy>=1.10.0",
-    "sqlalchemy[asyncio]>=2.0.0",
+[tool.poetry]
+packages = [
+    { include = "backend" },
+    { include = "ml" },
 ]
+
+[tool.poetry.group.dev.dependencies]
+pytest = ">=8.2.0"
+httpx = ">=0.27.0"
+pytest-asyncio = ">=0.23.0"
+black = ">=24.3.0"
+ruff = ">=0.8.0"
+mypy = ">=1.10.0"
+sqlalchemy = { version = ">=2.0.0", extras = ["asyncio"] }
 
 [tool.poetry.scripts]
 agriai = "backend.app:main"
