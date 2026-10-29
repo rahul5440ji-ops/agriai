@@ -34,13 +34,13 @@ frontend origins. Do not use `*` with credentialed CORS.
 
 ## Machine-learning artifacts
 
-Trained model files are excluded by `.gitignore` and are not present in a
-fresh Git checkout. Without the yield and price model artifacts, the API still
-starts, but the corresponding prediction endpoints return `503` and health
-reports those models as unavailable. Make the trusted artifacts available to
-the deployment and ensure they are included in the Python function bundle
-before enabling those features. Do not commit artifacts containing private
-training data or credentials.
+The repository includes `models/yield_model.pkl`, a model trained on synthetic
+data for development and demonstration. It is not validated for real farming
+decisions; replace it with an independently validated artifact before
+production use. Other trained model files, including the market price model,
+remain excluded by `.gitignore`. Without the price model artifact, the API
+starts but price forecasts are unavailable. Do not commit artifacts containing
+private training data or credentials.
 
 ## Runtime notes
 
