@@ -37,7 +37,19 @@ Yield Model          Price Model
    python scripts/init_db.py
    ```
 
-2. **Train the ML models (once)**
+2. **Train the ML models using synthetic data (recommended for first run)**
+   ```bash
+   python scripts/train_with_synthetic_data.py
+   ```
+   Options:
+   ```bash
+   python scripts/train_with_synthetic_data.py --yield-only        # Train only crop yield model
+   python scripts/train_with_synthetic_data.py --price-only        # Train only market price model
+   python scripts/train_with_synthetic_data.py --samples 5000      # More training samples
+   python scripts/train_with_synthetic_data.py --price-days 1095   # 3 years of price history
+   ```
+
+   Or train using the original scripts (requires real data in the database):
    ```bash
    python -m ml.crop_yield.train_yield
    python -m ml.market_price.train_price
@@ -62,7 +74,39 @@ Yield Model          Price Model
 - **ML Model Training**: Start with regression baselines, evaluate with MAE/RMSE/R², track metrics.
 - **Data Provenance**: Every external record retains source, retrieval timestamp, validation status.
 
-## Data Sources
+## ML Models
+
+### 🌾 Crop Yield Model (`models/yield_model.pkl`)
+
+Predicts crop yield in tonnes/hectare for a given field and crop.
+
+| Model | Train R² | Val R² | Val MAE | Val MAPE |
+|---|---|---|---|---|
+| Ridge | 0.969 | 0.963 | 1.479 t/ha | 40.7% |
+| **RandomForest** ✅ | **0.995** | **0.979** | **0.978 t/ha** | **14.8%** |
+| GradientBoosting | 0.999 | 0.976 | 1.029 t/ha | 14.3% |
+
+**Training data:** 3,000 synthetic samples — 20 crops, 19 Indian states, all agro-climatic zones<br>
+**Features:** Soil pH, NPK nutrients, rainfall, temperature, irrigation type, soil type, sowing month, year trend, NPK ratios, soil quality score<br>
+**Split:** 80/20 chronological (time-aware, no future leakage)
+
+### 💰 Market Price Model (`models/price_model.pkl`)
+
+Forecasts market prices (₹/quintal) for the next 7 days per commodity-market pair.
+
+| Coverage | Detail |
+|---|---|
+| **Commodities** | wheat, rice, maize, cotton, soybean, groundnut, mustard, onion, potato, tomato, chilli, chickpea, turmeric |
+| **Markets** | 17 APMC markets across Punjab, UP, Maharashtra, Gujarat, Rajasthan, Andhra Pradesh, Telangana |
+| **Forecast horizon** | 7 days |
+| **Features** | Lag prices (1,3,7,14,30 days), rolling mean/std/min/max, arrivals, seasonal cyclical encoding |
+
+**Per-series** model trained for each commodity-market combination.
+**Split:** Chronological — last 7 days held out for evaluation.
+
+> ⚠️ Both models are currently trained on **synthetic data**. Replace with real field observations (Agmarknet / data.gov.in) before production deployment.
+
+
 
 - **Government crop data**: data.gov.in
 - **MSP**: Department of Agriculture & Farmers Welfare
@@ -77,7 +121,7 @@ Yield Model          Price Model
 - `frontend/` — React UI with i18n
 - `database/` — SQLAlchemy models, Alembic migrations
 - `docs/` — Architecture, data sources, deployment
-- `scripts/` — initialization, data ingestion, migration
+- `scripts/` — initialization, data ingestion, migration, **synthetic data training** (`train_with_synthetic_data.py`)
 - `tests/` — API, models, market calculations
 
 ## Deploy to Vercel

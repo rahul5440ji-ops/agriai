@@ -46,6 +46,8 @@ class YieldService:
         features = {
             "state": state,
             "district": farm.district if farm else "unknown",
+            "soil_type": farm.soil_type if (farm and farm.soil_type) else "Alluvial",
+            "irrigation_type": farm.irrigation_type if (farm and farm.irrigation_type) else "Canal",
             "crop": request.crop,
             "season": request.season,
             "area_hectare": request.area_hectare,
@@ -54,6 +56,7 @@ class YieldService:
             "phosphorus": request.soil.phosphorus,
             "potassium": request.soil.potassium,
             "organic_carbon": request.soil.organic_carbon,
+            "rainfall": request.rainfall_mm,
             "sowing_month": request.sowing_date.month,
             "sowing_year": request.sowing_date.year,
         }

@@ -34,7 +34,8 @@ def build_features(df: pd.DataFrame) -> pd.DataFrame:
     # --- Numeric features ---
     numeric_features = [
         "ph", "nitrogen", "phosphorus", "potassium", "organic_carbon",
-        "rainfall", "temperature",
+        "rainfall", "temperature", "humidity", "area_hectare",
+        "year", "sowing_year", "sowing_month",
     ]
     for col in numeric_features:
         if col in df.columns:
@@ -47,13 +48,20 @@ def build_features(df: pd.DataFrame) -> pd.DataFrame:
     ]
     for col in categorical_features:
         if col in df.columns:
-            df[col] = df[col].astype(str)
+            df[col] = df[col].astype(str).str.strip().str.lower()
 
     # --- Derived features ---
     if "sowing_month" in df.columns:
         # Cyclical encoding for month (1-12)
         df["sowing_month_sin"] = np.sin(2 * np.pi * df["sowing_month"] / 12)
         df["sowing_month_cos"] = np.cos(2 * np.pi * df["sowing_month"] / 12)
+
+    if "rainfall" in df.columns:
+        df["rainfall_log"] = np.log1p(df["rainfall"].clip(lower=0))
+
+    year_column = "sowing_year" if "sowing_year" in df.columns else "year"
+    if year_column in df.columns:
+        df["year_idx"] = df[year_column] - 2020
 
     # Soil nutrient balance
     if all(c in df.columns for c in ["nitrogen", "phosphorus", "potassium"]):
@@ -83,20 +91,18 @@ def build_features(df: pd.DataFrame) -> pd.DataFrame:
             scores.append(normalized)
         df["soil_quality_score"] = np.mean(scores, axis=0)
 
-    # Year as numeric feature (captures temporal trend)
-    if "year" in df.columns:
-        df["year_numeric"] = df["year"]
-
     logger.info("Built features: %d columns", len(df.columns))
     return df
 
 
 def get_feature_columns(df: pd.DataFrame) -> list:
-    """Return the list of feature columns (excluding target)."""
+    """Return the list of feature columns (excluding targets, IDs, and metadata)."""
     exclude = [
-        "yield_per_hectare", "yield_per_hectare_t",
-        "total_production", "production",
-        "date", "sowing_date", "harvest_date",
+        "yield_per_hectare", "yield_per_hectare_t", "yield_tph", "yield_tonnes_per_hectare",
+        "total_production", "production", "total_production_tonnes",
+        "date", "sowing_date", "harvest_date", "expected_harvest_date",
+        "farm_cycle_id", "sample_id", "id", "data_type", "actual_yield_tph",
+        "agro_zone", "year", "year_numeric",
         "_source", "_retrieved_at", "_obs_date",
         "_geo_level", "_crop", "_validation_status",
         "_source_record_id",
@@ -106,7 +112,7 @@ def get_feature_columns(df: pd.DataFrame) -> list:
 
 def get_target_column(df: pd.DataFrame) -> str:
     """Return the target column name."""
-    for col in ["yield_per_hectare", "yield_per_hectare_t", "yield_tph"]:
+    for col in ["yield_per_hectare", "yield_per_hectare_t", "yield_tph", "yield_tonnes_per_hectare"]:
         if col in df.columns:
             return col
     raise ValueError("No target column found in DataFrame")

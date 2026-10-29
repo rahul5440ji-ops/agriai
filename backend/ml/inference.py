@@ -82,6 +82,12 @@ class YieldModelService(BaseInferenceModel):
         predicted = float(self._pipeline.predict(row[feature_cols])[0])
 
         metrics = self._metadata.get("metrics", {}) if self._metadata else {}
+        if self._metadata and not metrics:
+            validation_metrics = self._metadata.get("val_metrics", {})
+            metrics = {
+                "val_rmse": validation_metrics.get("rmse"),
+                "val_r2": validation_metrics.get("r2"),
+            }
         val_rmse = metrics.get("val_rmse")
         # Uncertainty band derived from validation RMSE, never fabricated.
         if val_rmse:
@@ -178,6 +184,12 @@ class PriceModelService(BaseInferenceModel):
             return [
                 {
                     "date": r.date.isoformat() if r.date else None,
+                    "commodity": r.commodity,
+                    "market": r.market,
+                    "state": r.state or "",
+                    "district": r.district or "",
+                    "variety": r.variety or "Other",
+                    "grade": r.grade or "FAQ",
                     "modal_price": r.modal_price,
                     "min_price": r.min_price,
                     "max_price": r.max_price,

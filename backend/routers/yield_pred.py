@@ -1,3 +1,5 @@
+import logging
+
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from backend.database import get_db
@@ -31,4 +33,5 @@ def predict_yield(request: YieldPredictRequest, db: Session = Depends(get_db)):
     except RuntimeError as exc:
         raise HTTPException(status_code=503, detail=str(exc))
     except Exception as exc:  # pragma: no cover - defensive
+        logging.getLogger(__name__).exception("Unexpected error in predict_yield: %s", exc)
         raise HTTPException(status_code=500, detail="Internal prediction error")

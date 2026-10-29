@@ -24,6 +24,7 @@ class YieldPredictRequest(BaseModel):
     area_hectare: float = Field(..., gt=0)
     soil: "SoilTestCreate"
     sowing_date: date
+    rainfall_mm: Optional[float] = None
 
 
 # --- Soil Test ---
