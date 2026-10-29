@@ -97,3 +97,4 @@ temp_jsx/
 *.bak
 *.orig
 *.rej
+.neon

@@ -10,17 +10,22 @@ routes are rewritten to the frontend entry page.
    Vercel's filesystem and SQLite databases are not persistent across function
    invocations.
 2. In the Vercel project settings, add `DATABASE_URL` for Production, Preview,
-   and Development as appropriate. Use the provider's pooled connection URL
-   when available. The API supports `postgres://` and `postgresql://` URLs.
+   and Development as appropriate. For Neon, use the pooled `DATABASE_URL` for
+   the application runtime. The API supports `postgres://` and `postgresql://`
+   URLs.
 3. Apply the schema to each database from a machine with network access to it:
 
    ```powershell
-   $env:DATABASE_URL = "postgresql://USER:PASSWORD@HOST/DATABASE?sslmode=require"
+   # Use Neon's direct (unpooled) URL for migrations.
+   $env:DATABASE_URL = "<Neon direct DATABASE_URL_UNPOOLED>"
    python -m alembic upgrade head
+   Remove-Item Env:DATABASE_URL
    ```
 
-   Keep the database URL out of source control. Repeat the migration for each
-   environment's database before sending traffic to that deployment.
+   Neon CLI provides this direct URL as `DATABASE_URL_UNPOOLED`; temporarily use
+   it as `DATABASE_URL` when running Alembic. Keep connection URLs out of source
+   control. Repeat the migration for each environment's database before
+   sending traffic to that deployment.
 4. Import the repository into Vercel with the repository root (`.`) as the
    project root. Keep the default framework/build detection; `vercel.json`
    defines the FastAPI and Vite services and their routing.

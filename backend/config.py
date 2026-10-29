@@ -15,6 +15,8 @@ class Settings(BaseSettings):
     )
 
     database_url: str = "sqlite:///./agriai.db"
+    database_url_unpooled: str | None = None
+    neon_branch: str | None = None
     app_host: str = "0.0.0.0"
     app_port: int = 8000
     cors_origins: list = [
