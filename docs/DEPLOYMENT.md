@@ -44,8 +44,10 @@ data for development and demonstration. It is not validated for real farming
 decisions; replace it with an independently validated artifact before
 production use. Other trained model files, including the market price model,
 remain excluded by `.gitignore`. Without the price model artifact, the API
-starts but price forecasts are unavailable. Do not commit artifacts containing
-private training data or credentials.
+starts but price forecasts are unavailable. Keep the scikit-learn runtime
+version aligned with the version used to train and validate the committed model
+artifact; the current artifact is pinned to scikit-learn 1.6.0. Do not commit
+artifacts containing private training data or credentials.
 
 ## Runtime notes
 
