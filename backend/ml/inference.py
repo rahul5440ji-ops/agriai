@@ -78,8 +78,22 @@ class YieldModelService(BaseInferenceModel):
         row["actual_yield_tph"] = 0
         row["expected_harvest_date"] = "2024-03-01"
         row["farm_season"] = features.get("season", "unknown")
-        feature_cols = get_feature_columns(row)
-        predicted = float(self._pipeline.predict(row[feature_cols])[0])
+        model_features = getattr(self._pipeline, "feature_names_in_", None)
+        if model_features is None:
+            row = row[get_feature_columns(row)]
+        else:
+            row = row.reindex(columns=model_features)
+            preprocessor = self._pipeline.named_steps.get("preprocessor")
+            if preprocessor is not None:
+                for _, transformer, columns in preprocessor.transformers_:
+                    means = getattr(transformer, "mean_", None)
+                    if means is None:
+                        continue
+                    for column, mean in zip(columns, means):
+                        if pd.isna(row.at[0, column]):
+                            row.at[0, column] = mean
+
+        predicted = max(0.0, float(self._pipeline.predict(row)[0]))
 
         metrics = self._metadata.get("metrics", {}) if self._metadata else {}
         if self._metadata and not metrics:
