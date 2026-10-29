@@ -434,12 +434,23 @@ def main():
             "total_series_count": len(series_results),
         }
 
+        source_values = (
+            df_raw["source"].dropna().astype(str).str.lower()
+            if "source" in df_raw
+            else pd.Series(dtype=str)
+        )
+        dataset_version = (
+            "synthetic-dev-001"
+            if source_values.str.contains("synthetic|simulat", regex=True).any()
+            else "market-observations"
+        )
+
         save_model_to_file(
             pipeline=forecast_pipeline,
             filepath=str(PRICE_MODEL_PATH),
             version=version,
             metrics=metrics,
-            dataset_version="synthetic-dev-001" if len(df_raw) < 100 else "agmarknet-2024",
+            dataset_version=dataset_version,
             train_rows=len(df_raw),
             validation_rows=sum(r.get("val_size", 0) for r in series_results if r.get("available", False)),
             validation_score="GOOD" if (available_count / max(1, len(series_results))) > 0.5 else "FAIR"
@@ -452,7 +463,7 @@ def main():
             version=version,
             artifact_path=str(PRICE_MODEL_PATH),
             metrics_json=metrics,
-            dataset_version="synthetic-dev-001" if len(df_raw) < 100 else "agmarknet-2024",
+            dataset_version=dataset_version,
         )
 
         logger.info("=" * 60)

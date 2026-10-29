@@ -67,6 +67,7 @@ credentials.json
 models/*
 !models/.gitkeep
 !models/yield_model.pkl
+!models/price_model.pkl
 
 # Data
 data/raw/

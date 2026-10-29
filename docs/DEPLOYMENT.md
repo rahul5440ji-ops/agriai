@@ -42,11 +42,14 @@ frontend origins. Do not use `*` with credentialed CORS.
 The repository includes `models/yield_model.pkl`, a model trained on synthetic
 data for development and demonstration. It is not validated for real farming
 decisions; replace it with an independently validated artifact before
-production use. Other trained model files, including the market price model,
-remain excluded by `.gitignore`. Without the price model artifact, the API
-starts but price forecasts are unavailable. Keep the scikit-learn runtime
-version aligned with the version used to train and validate the committed model
-artifact; the current artifact is pinned to scikit-learn 1.6.0. Do not commit
+production use. The bundled price model is also trained on synthetic seed
+prices for demonstration only; it is not a source of current or verified market
+prices. A forecast is returned only when the database has at least 60
+observations for the selected commodity and market, which provide enough
+history for the model's 30-day lag features. Import verified Agmarknet data
+before using the price forecast in production. Keep the scikit-learn
+runtime version aligned with the version used to train and validate the
+committed model artifacts; it is pinned to scikit-learn 1.6.0. Do not commit
 artifacts containing private training data or credentials.
 
 ## Runtime notes

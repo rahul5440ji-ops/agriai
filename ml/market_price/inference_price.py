@@ -15,6 +15,8 @@ from ml.market_price.features_price import build_price_features, get_feature_col
 
 logger = logging.getLogger(__name__)
 
+MIN_HISTORICAL_OBSERVATIONS = 60
+
 
 class PriceForecastPipeline:
     """Inference pipeline for market price forecasting.
@@ -81,11 +83,12 @@ class PriceForecastPipeline:
             }
 
         # Check if there's enough historical data
-        if len(historical_data) < 30:
+        if len(historical_data) < MIN_HISTORICAL_OBSERVATIONS:
             return {
                 "available": False,
                 "message": f"Insufficient historical data for reliable forecast. "
-                          f"Only {len(historical_data)} observations available.",
+                          f"Only {len(historical_data)} observations available; "
+                          f"{MIN_HISTORICAL_OBSERVATIONS} are required.",
                 "commodity": commodity,
                 "market": market,
             }
@@ -108,7 +111,7 @@ class PriceForecastPipeline:
         # Make prediction
         model = self.series_models[key]
         try:
-            prediction = model.predict(last_row[feature_cols])[0]
+            prediction = max(0.0, float(model.predict(last_row[feature_cols])[0]))
         except Exception as e:
             logger.warning("Prediction failed for %s: %s", key, e)
             return {
@@ -122,8 +125,10 @@ class PriceForecastPipeline:
         metadata = self.series_metadata.get(key, {})
         val_metrics = metadata.get("val_metrics", {})
         confidence = metadata.get("confidence", 0.5)
-        forecast_lower = metadata.get("forecast_lower", prediction * 0.9)
-        forecast_upper = metadata.get("forecast_upper", prediction * 1.1)
+        rmse = val_metrics.get("rmse")
+        interval = 1.96 * rmse if rmse and rmse > 0 else prediction * 0.1
+        forecast_lower = max(0.0, prediction - interval)
+        forecast_upper = prediction + interval
 
         return {
             "available": True,

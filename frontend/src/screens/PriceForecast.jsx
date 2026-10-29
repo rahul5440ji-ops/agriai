@@ -361,7 +361,7 @@ export default function PriceForecast() {
             {isHi ? 'अपर्याप्त डेटा के कारण पूर्वानुमान उपलब्ध नहीं' : 'Forecast Unavailable: Insufficient Historical Series'}
           </h3>
           <p className="text-xs text-slate-500 max-w-md mx-auto leading-relaxed">
-            {result.message || 'At least 30 consecutive days of mandi price observations are required to prevent speculative errors.'}
+            {result.message || 'At least 60 mandi price observations are required to calculate the 30-day lag features used by this model.'}
           </p>
         </div>
       ) : null}

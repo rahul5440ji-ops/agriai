@@ -169,7 +169,12 @@ class PriceModelService(BaseInferenceModel):
             except Exception as exc:  # pragma: no cover - defensive
                 logger.warning("Could not fetch historical prices: %s", exc)
             features = {**features, "historical_data": historical}
-        return self._pipeline.predict_single(features)
+        result = self._pipeline.predict_single(features)
+        if result.get("available") and self._metadata:
+            result["model_version"] = self._metadata.get(
+                "version", result.get("model_version", "unknown")
+            )
+        return result
 
     def _fetch_historical(self, features: dict) -> list:
         """Pull recent market observations for the requested commodity/market."""
