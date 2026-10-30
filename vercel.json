@@ -25,7 +25,7 @@
       }
     },
     {
-      "source": "/(.*)",
+      "source": "/:path*",
       "destination": {
         "service": "frontend",
         "path": "/index.html"
