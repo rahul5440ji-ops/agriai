@@ -25,77 +25,7 @@
       }
     },
     {
-      "source": "/",
-      "destination": {
-        "service": "frontend",
-        "path": "/index.html"
-      }
-    },
-    {
-      "source": "/dashboard",
-      "destination": {
-        "service": "frontend",
-        "path": "/index.html"
-      }
-    },
-    {
-      "source": "/farm",
-      "destination": {
-        "service": "frontend",
-        "path": "/index.html"
-      }
-    },
-    {
-      "source": "/soil",
-      "destination": {
-        "service": "frontend",
-        "path": "/index.html"
-      }
-    },
-    {
-      "source": "/yield",
-      "destination": {
-        "service": "frontend",
-        "path": "/index.html"
-      }
-    },
-    {
-      "source": "/advisory",
-      "destination": {
-        "service": "frontend",
-        "path": "/index.html"
-      }
-    },
-    {
-      "source": "/market",
-      "destination": {
-        "service": "frontend",
-        "path": "/index.html"
-      }
-    },
-    {
-      "source": "/compare",
-      "destination": {
-        "service": "frontend",
-        "path": "/index.html"
-      }
-    },
-    {
-      "source": "/forecast",
-      "destination": {
-        "service": "frontend",
-        "path": "/index.html"
-      }
-    },
-    {
-      "source": "/history",
-      "destination": {
-        "service": "frontend",
-        "path": "/index.html"
-      }
-    },
-    {
-      "source": "/settings",
+      "source": "/(.*)",
       "destination": {
         "service": "frontend",
         "path": "/index.html"
