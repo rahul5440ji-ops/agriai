@@ -98,7 +98,7 @@ export default function Settings() {
 
           <div className="p-3 rounded-2xl bg-slate-50 border border-slate-200/60">
             <span className="text-[10px] text-slate-400 uppercase font-semibold block">Database</span>
-            <span className="font-bold text-slate-800 block mt-0.5">SQLite (26k+ Mandis)</span>
+            <span className="font-bold text-slate-800 block mt-0.5">Synthetic Demo Market Prices</span>
           </div>
         </div>
       </div>

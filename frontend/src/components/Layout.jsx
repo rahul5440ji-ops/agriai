@@ -50,8 +50,10 @@ export default function Layout({ children }) {
           {/* Quick Actions in Header */}
           <div className="flex items-center gap-2">
             <div className="hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-900/50 border border-emerald-700/60 text-emerald-200 text-xs">
-              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-              <span className="font-medium text-[11px]">26k+ Mandis Live</span>
+              <span className="w-2 h-2 rounded-full bg-amber-300"></span>
+              <span className="font-medium text-[11px]">
+                {language === 'hi' ? 'डेमो मंडी डेटा' : 'Synthetic Demo Markets'}
+              </span>
             </div>
 
             {/* Language toggle pill */}

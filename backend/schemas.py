@@ -1,7 +1,7 @@
 """Pydantic schemas for all API requests and responses."""
-from pydantic import BaseModel, Field, field_validator
 from datetime import date
-from typing import Optional, List
+
+from pydantic import BaseModel, Field, field_validator
 
 
 # --- Yield Prediction ---
@@ -11,10 +11,10 @@ class YieldOutput(BaseModel):
     upper_bound_tph: float
     total_production_t: float
     model_version: str
-    confidence: Optional[float] = None
+    confidence: float | None = None
     top_factors: list = []
-    regional_baseline_tph: Optional[float] = None
-    regional_baseline_note: Optional[str] = None
+    regional_baseline_tph: float | None = None
+    regional_baseline_note: str | None = None
 
 
 class YieldPredictRequest(BaseModel):
@@ -24,16 +24,16 @@ class YieldPredictRequest(BaseModel):
     area_hectare: float = Field(..., gt=0)
     soil: "SoilTestCreate"
     sowing_date: date
-    rainfall_mm: Optional[float] = None
+    rainfall_mm: float | None = None
 
 
 # --- Soil Test ---
 class SoilTestCreate(BaseModel):
     ph: float = Field(..., ge=0, le=14)
-    nitrogen: Optional[float] = Field(None, ge=0)
-    phosphorus: Optional[float] = Field(None, ge=0)
-    potassium: Optional[float] = Field(None, ge=0)
-    organic_carbon: Optional[float] = Field(None, ge=0)
+    nitrogen: float | None = Field(None, ge=0)
+    phosphorus: float | None = Field(None, ge=0)
+    potassium: float | None = Field(None, ge=0)
+    organic_carbon: float | None = Field(None, ge=0)
     test_date: date
 
 
@@ -41,22 +41,22 @@ class SoilTestResponse(BaseModel):
     id: int
     farm_id: int
     ph: float
-    nitrogen: Optional[float]
-    phosphorus: Optional[float]
-    potassium: Optional[float]
-    organic_carbon: Optional[float]
-    test_date: Optional[date]
-    source: Optional[str]
+    nitrogen: float | None
+    phosphorus: float | None
+    potassium: float | None
+    organic_carbon: float | None
+    test_date: date | None
+    source: str | None
 
 
 # --- Farm ---
 class FarmCreate(BaseModel):
     state: str = Field(..., min_length=2, max_length=64)
     district: str = Field(..., min_length=2, max_length=64)
-    village: Optional[str] = None
+    village: str | None = None
     area_hectare: float = Field(..., gt=0, description="Field area must be positive")
-    soil_type: Optional[str] = None
-    irrigation_type: Optional[str] = None
+    soil_type: str | None = None
+    irrigation_type: str | None = None
 
     @field_validator("area_hectare")
     @classmethod
@@ -70,11 +70,11 @@ class FarmResponse(BaseModel):
     id: int
     state: str
     district: str
-    village: Optional[str]
+    village: str | None
     area_hectare: float
-    soil_type: Optional[str]
-    irrigation_type: Optional[str]
-    created_at: Optional[str] = None
+    soil_type: str | None
+    irrigation_type: str | None
+    created_at: str | None = None
 
 
 # --- Farm Cycle ---
@@ -83,7 +83,7 @@ class FarmCycleCreate(BaseModel):
     crop: str
     season: str
     sowing_date: date
-    expected_harvest_date: Optional[date] = None
+    expected_harvest_date: date | None = None
 
 
 class FarmCycleResponse(BaseModel):
@@ -91,9 +91,9 @@ class FarmCycleResponse(BaseModel):
     farm_id: int
     crop: str
     season: str
-    sowing_date: Optional[date]
-    expected_harvest_date: Optional[date]
-    created_at: Optional[str] = None
+    sowing_date: date | None
+    expected_harvest_date: date | None
+    created_at: str | None = None
 
 
 # --- Market Comparison ---
@@ -103,18 +103,19 @@ class MarketComparisonItem(BaseModel):
     msp_reference_per_quintal: float
     estimated_transport_cost: float
     estimated_net_price: float
-    distance_km: Optional[float] = None
+    distance_km: float | None = None
     data_freshness_days: int
     data_quality: str
+    is_synthetic: bool = False
     forecast_available: bool = False
-    forecast_confidence: Optional[float] = None
+    forecast_confidence: float | None = None
 
 
 # --- Market Recommendation ---
 class MarketRecommendationRequest(BaseModel):
     crop: str
     state: str
-    district: Optional[str] = ""
+    district: str | None = ""
     transport_cost_per_quintal: float = 0.0
     other_costs: float = 0.0
     max_distance_km: float = 500.0
@@ -127,9 +128,10 @@ class MarketRecommendationItem(BaseModel):
     modal_price_per_quintal: float
     msp_reference_per_quintal: float
     estimated_transport_cost: float
-    distance_km: Optional[float] = None
+    distance_km: float | None = None
     data_freshness_days: int
     data_quality: str
+    is_synthetic: bool = False
     explanation: str
 
 
@@ -142,16 +144,16 @@ class PriceForecastRequest(BaseModel):
 
 class PriceForecastResponse(BaseModel):
     available: bool
-    message: Optional[str] = None
+    message: str | None = None
     commodity: str
     market: str
-    forecast_lower: Optional[float] = None
-    forecast_upper: Optional[float] = None
-    expected_midpoint: Optional[float] = None
-    forecast_horizon_days: Optional[int] = None
-    confidence: Optional[float] = None
-    confidence_note: Optional[str] = None
-    model_version: Optional[str] = None
+    forecast_lower: float | None = None
+    forecast_upper: float | None = None
+    expected_midpoint: float | None = None
+    forecast_horizon_days: int | None = None
+    confidence: float | None = None
+    confidence_note: str | None = None
+    model_version: str | None = None
 
 
 # --- Health ---
@@ -165,8 +167,8 @@ class HealthResponse(BaseModel):
 class CropResponse(BaseModel):
     id: int
     name: str
-    season: Optional[str]
-    unit: Optional[str]
+    season: str | None
+    unit: str | None
 
 
 class MspReferenceResponse(BaseModel):
@@ -174,13 +176,13 @@ class MspReferenceResponse(BaseModel):
     marketing_season: str
     year: int
     msp_rs_per_quintal: float
-    source: Optional[str]
+    source: str | None
 
 
 # --- Advisory ---
 class AdvisoryResponse(BaseModel):
-    factors: List[str] = []
-    recommendations: List[str] = []
+    factors: list[str] = []
+    recommendations: list[str] = []
     disclaimer: str = ""
 
 

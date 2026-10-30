@@ -1,14 +1,14 @@
+
 from fastapi import APIRouter, Depends, HTTPException
-from sqlalchemy import text
 from sqlalchemy.orm import Session
+
 from backend.database import get_db
 from backend.models import Crop, MspPrice
-from typing import Optional
 from backend.schemas import (
+    CropResponse,
     MarketComparisonItem,
     MarketRecommendationItem,
     MarketRecommendationRequest,
-    CropResponse,
     MspReferenceResponse,
 )
 from backend.services.market_service import compare_markets, recommend_markets
@@ -16,7 +16,7 @@ from backend.services.market_service import compare_markets, recommend_markets
 router = APIRouter()
 
 
-@router.get("/markets/compare")
+@router.get("/markets/compare", response_model=list[MarketComparisonItem])
 def compare_markets_endpoint(
     crop: str,
     state: str,
@@ -29,39 +29,24 @@ def compare_markets_endpoint(
 
     Returns a list of market comparison items with net price calculations.
     """
-    try:
-        result = compare_markets(
-            db=db,
-            crop_name=crop,
-            state=state,
-            district=district,
-            transport_cost=transport_cost,
-            other_costs=other_costs,
-        )
-        return [
-            MarketComparisonItem(
-                market=item.get("market", ""),
-                modal_price_per_quintal=item.get("modal_price_per_quintal", 0),
-                msp_reference_per_quintal=item.get("msp_reference_per_quintal", 0),
-                estimated_transport_cost=item.get("estimated_transport_cost", 0),
-                estimated_net_price=item.get("estimated_net_price", 0),
-                distance_km=item.get("distance_km"),
-                data_freshness_days=item.get("data_freshness_days", 0),
-                data_quality=item.get("data_quality", "limited"),
-                forecast_available=item.get("forecast_available", False),
-                forecast_confidence=item.get("forecast_confidence"),
-            )
-            for item in result
-        ]
-    except Exception as exc:  # pragma: no cover - defensive
-        raise HTTPException(status_code=500, detail="Market comparison failed")
+    return compare_markets(
+        db=db,
+        crop_name=crop,
+        state=state,
+        district=district,
+        transport_cost=transport_cost,
+        other_costs=other_costs,
+    )
 
 
-@router.post("/markets/recommend")
+@router.post(
+    "/markets/recommend",
+    response_model=list[MarketRecommendationItem],
+)
 def recommend_markets_endpoint(
-    body: Optional[MarketRecommendationRequest] = None,
-    crop: Optional[str] = None,
-    state: Optional[str] = None,
+    body: MarketRecommendationRequest | None = None,
+    crop: str | None = None,
+    state: str | None = None,
     district: str = "",
     transport_cost_per_quintal: float = 0.0,
     other_costs: float = 0.0,
@@ -84,19 +69,16 @@ def recommend_markets_endpoint(
     if not target_crop or not target_state:
         raise HTTPException(status_code=422, detail="Crop and state are required")
 
-    try:
-        result = recommend_markets(
-            db=db,
-            crop_name=target_crop,
-            state=target_state,
-            district=target_district,
-            transport_cost_per_quintal=target_transport,
-            other_costs=target_other,
-            max_distance_km=target_max_dist,
-        )
-        return [MarketRecommendationItem(**item) for item in result]
-    except Exception as exc:  # pragma: no cover - defensive
-        raise HTTPException(status_code=500, detail="Market recommendation failed")
+    result = recommend_markets(
+        db=db,
+        crop_name=target_crop,
+        state=target_state,
+        district=target_district,
+        transport_cost_per_quintal=target_transport,
+        other_costs=target_other,
+        max_distance_km=target_max_dist,
+    )
+    return [MarketRecommendationItem(**item) for item in result]
 
 
 @router.get("/crops")
@@ -128,5 +110,3 @@ def get_msp_reference(crop: str, db: Session = Depends(get_db)):
         msp_rs_per_quintal=msp.msp_rs_per_quintal,
         source=msp.source,
     )
-
-

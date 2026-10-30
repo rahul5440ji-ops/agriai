@@ -5,18 +5,15 @@ Seeds:
   - MSP prices for 2023-24 season (official govt data)
   - Synthetic market price data for multiple states/districts
 """
-import sys
 import os
-from datetime import date, timedelta
 import random
+import sys
+from datetime import date, timedelta
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
 
 from backend.database import SessionLocal, engine
-from backend.models import Base, Crop, MspPrice, MarketPrice
-
-# Ensure tables exist
-Base.metadata.create_all(bind=engine)
+from backend.models import Base, Crop, MarketPrice, MspPrice
 
 # Official MSP for 2023-24 (Rs/quintal) - Govt of India data
 CROPS = [
@@ -130,38 +127,44 @@ def seed_msp(db):
 
 
 def seed_market_prices(db, n_days=60):
-    """Generate synthetic but realistic market price data."""
+    """Generate clearly labeled, deterministic demo market price data."""
     today = date.today()
+    start_date = today - timedelta(days=n_days - 1)
+    market_names = [market["market"] for market in MARKET_DATA]
+    existing = {
+        (market, commodity, obs_date)
+        for market, commodity, obs_date in (
+            db.query(MarketPrice.market, MarketPrice.commodity, MarketPrice.date)
+            .filter(
+                MarketPrice.source == "synthetic-demo",
+                MarketPrice.market.in_(market_names),
+                MarketPrice.date >= start_date,
+                MarketPrice.date <= today,
+            )
+            .all()
+        )
+    }
+
+    rng = random.Random(42)
+    batch = []
     added = 0
-    skipped = 0
 
     for market_info in MARKET_DATA:
         for crop_name, price_range in COMMODITY_PRICE_BASE.items():
-            base_price = random.uniform(price_range["min"], price_range["max"])
+            base_price = rng.uniform(price_range["min"], price_range["max"])
             for day_offset in range(n_days):
                 obs_date = today - timedelta(days=day_offset)
-                price = base_price * random.uniform(0.97, 1.03)
+                price = base_price * rng.uniform(0.97, 1.03)
                 modal = round(price, 2)
                 min_p = round(modal * 0.93, 2)
                 max_p = round(modal * 1.07, 2)
+                arrivals = round(rng.uniform(50, 5000), 1)
 
-                exists = (
-                    db.query(MarketPrice)
-                    .filter_by(
-                        source="synthetic-seed",
-                        market=market_info["market"],
-                        commodity=crop_name,
-                        date=obs_date,
-                        variety="",
-                        grade="",
-                    )
-                    .first()
-                )
-                if exists:
-                    skipped += 1
+                record_key = (market_info["market"], crop_name, obs_date)
+                if record_key in existing:
                     continue
 
-                db.add(MarketPrice(
+                batch.append(MarketPrice(
                     date=obs_date,
                     state=market_info["state"],
                     district=market_info["district"],
@@ -172,18 +175,23 @@ def seed_market_prices(db, n_days=60):
                     min_price=min_p,
                     max_price=max_p,
                     modal_price=modal,
-                    arrivals=round(random.uniform(50, 5000), 1),
+                    arrivals=arrivals,
                     unit="quintal",
-                    source="synthetic-seed",
+                    source="synthetic-demo",
                 ))
+                existing.add(record_key)
                 added += 1
 
-                if added % 1000 == 0:
+                if len(batch) >= 1000:
+                    db.add_all(batch)
                     db.commit()
+                    batch.clear()
                     print(f"    ... committed {added} rows ...")
 
+    if batch:
+        db.add_all(batch)
     db.commit()
-    print(f"  Added {added} market price records (skipped {skipped} existing)")
+    print(f"  Added {added} synthetic demo market price records")
 
 
 def main():
@@ -191,6 +199,7 @@ def main():
     print("AgriAI: Seeding reference data")
     print("=" * 50)
 
+    Base.metadata.create_all(bind=engine)
     db = SessionLocal()
     try:
         print("\n[1/3] Seeding crops...")
@@ -199,7 +208,7 @@ def main():
         print("\n[2/3] Seeding MSP prices...")
         seed_msp(db)
 
-        print("\n[3/3] Seeding market prices (60 days)...")
+        print("\n[3/3] Seeding clearly labeled synthetic demo prices (60 days)...")
         seed_market_prices(db, n_days=60)
 
         print("\nSeeding complete!")

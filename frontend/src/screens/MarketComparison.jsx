@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { api } from '../services/api';
 import useAppStore from '../store';
 import LocationDropdown from '../components/LocationDropdown';
+import SyntheticDataNotice from '../components/SyntheticDataNotice';
 
 const CROPS = [
   'wheat', 'rice', 'maize', 'cotton', 'sugarcane',
@@ -23,6 +24,7 @@ export default function MarketComparison() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [sortBy, setSortBy] = useState('net');
+  const hasSyntheticResults = result?.some((row) => row.is_synthetic);
 
   const handleCompare = async (e) => {
     if (e) e.preventDefault();
@@ -66,7 +68,7 @@ export default function MarketComparison() {
           </h1>
           <p className="text-xs text-slate-500 mt-0.5">
             {isHi
-              ? 'विभिन्न मंडियों के वास्तविक भाव और सरकारी न्यूनतम समर्थन मूल्य (MSP) की तालिका'
+              ? 'मंडियों के भाव और सरकारी न्यूनतम समर्थन मूल्य (MSP) संदर्भ की तुलना'
               : 'Detailed side-by-side comparison of local market modal prices and benchmark MSP'}
           </p>
         </div>
@@ -84,6 +86,8 @@ export default function MarketComparison() {
           <span>{error}</span>
         </div>
       )}
+
+      {hasSyntheticResults && <SyntheticDataNotice isHi={isHi} />}
 
       {/* Filter Card */}
       <form onSubmit={handleCompare} className="bg-white rounded-3xl p-5 border border-slate-200/80 shadow-sm space-y-4">
@@ -186,7 +190,9 @@ export default function MarketComparison() {
                   <th className="py-3 px-4 text-right">Modal Rate</th>
                   <th className="py-3 px-4 text-right">Govt MSP</th>
                   <th className="py-3 px-4 text-right">Freight Adj.</th>
-                  <th className="py-3 px-4 text-right font-black text-emerald-800">Est. Net Realization</th>
+                  <th className="py-3 px-4 text-right font-black text-emerald-800">
+                    {hasSyntheticResults ? 'Demo Net Estimate' : 'Est. Net Realization'}
+                  </th>
                   <th className="py-3 px-4 text-center">Action</th>
                 </tr>
               </thead>
@@ -199,7 +205,11 @@ export default function MarketComparison() {
                     <tr key={i} className="hover:bg-slate-50/80 transition-colors">
                       <td className="py-3 px-4 font-bold text-slate-900">
                         <div>{row.market}</div>
-                        {row.data_freshness_days > 30 ? (
+                        {row.is_synthetic ? (
+                          <span className="text-[10px] text-amber-800 font-bold">
+                            {isHi ? 'डेमो डेटा' : 'Synthetic demo data'}
+                          </span>
+                        ) : row.data_freshness_days > 30 ? (
                           <span className="text-[10px] text-amber-600 font-normal">Stale ({row.data_freshness_days}d ago)</span>
                         ) : (
                           <span className="text-[10px] text-emerald-600 font-normal">Fresh ({row.data_freshness_days}d ago)</span>

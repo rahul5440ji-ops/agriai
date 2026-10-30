@@ -5,12 +5,12 @@ net price, distance, data freshness, data quality, forecast confidence.
 MSP is treated as a REFERENCE — never a guaranteed amount.
 """
 import logging
-from datetime import date, datetime
-from typing import Optional
+from datetime import date
 
 from sqlalchemy.orm import Session
+
+from backend.models import Crop, MarketPrice, MspPrice
 from backend.schemas import MarketComparisonItem
-from backend.models import MarketPrice, MspPrice, Crop
 
 logger = logging.getLogger(__name__)
 
@@ -78,14 +78,17 @@ def compare_markets(
             MarketPrice.state == state,
             MarketPrice.commodity == crop_name,
         )
-        .order_by(MarketPrice.date.desc())
+        .order_by(MarketPrice.date.desc(), MarketPrice.id.desc())
         .all()
     )
 
     items = []
+    seen_markets = set()
     for market in markets:
-        if market.modal_price is None:
+        if market.market in seen_markets or market.modal_price is None:
             continue
+        seen_markets.add(market.market)
+        is_synthetic = bool(market.source and market.source.startswith("synthetic"))
         net_price = (
             market.modal_price
             - transport_cost
@@ -100,7 +103,12 @@ def compare_markets(
                 estimated_net_price=net_price,
                 distance_km=None,  # computed later if coordinates available
                 data_freshness_days=_data_freshness_days(market.date),
-                data_quality="good" if _data_quality_score(market) >= 0.6 else "limited",
+                data_quality=(
+                    "synthetic"
+                    if is_synthetic
+                    else "good" if _data_quality_score(market) >= 0.6 else "limited"
+                ),
+                is_synthetic=is_synthetic,
                 forecast_available=False,
             )
         )
@@ -158,6 +166,10 @@ def recommend_markets(
                 )
         else:
             explanation_parts.append("no MSP reference available for this crop")
+        if item.is_synthetic:
+            explanation_parts.append(
+                "synthetic demo data; not a current mandi quote"
+            )
         explanation_parts.append(
             f"data is {item.data_freshness_days} day(s) old"
         )
@@ -174,6 +186,7 @@ def recommend_markets(
             "distance_km": item.distance_km,
             "data_freshness_days": item.data_freshness_days,
             "data_quality": item.data_quality,
+            "is_synthetic": item.is_synthetic,
             "explanation": explanation,
         })
     return recommendations

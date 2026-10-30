@@ -3,6 +3,7 @@ import { Link, useSearchParams } from 'react-router-dom';
 import { api } from '../services/api';
 import useAppStore from '../store';
 import LocationDropdown from '../components/LocationDropdown';
+import SyntheticDataNotice from '../components/SyntheticDataNotice';
 
 const CROPS = [
   'wheat', 'rice', 'maize', 'cotton', 'sugarcane',
@@ -26,6 +27,7 @@ export default function MarketAdvisor() {
   const [error, setError] = useState(null);
   const [recommendations, setRecommendations] = useState(null);
   const [mspData, setMspData] = useState(null);
+  const hasSyntheticRecommendations = recommendations?.some((item) => item.is_synthetic);
 
   // Fetch MSP reference when crop changes
   useEffect(() => {
@@ -104,6 +106,8 @@ export default function MarketAdvisor() {
           <span>{error}</span>
         </div>
       )}
+
+      {hasSyntheticRecommendations && <SyntheticDataNotice isHi={isHi} />}
 
       {/* Control Panel / Filter Card */}
       <form onSubmit={handleRecommend} className="bg-white rounded-3xl p-5 sm:p-6 border border-slate-200/80 shadow-sm space-y-4">
@@ -255,7 +259,9 @@ export default function MarketAdvisor() {
                 >
                   {isTop && (
                     <span className="absolute -top-3 left-6 px-3 py-0.5 rounded-full bg-emerald-600 text-white text-[10px] font-extrabold uppercase tracking-wider shadow-sm flex items-center gap-1">
-                      <span>⭐</span> {isHi ? 'सर्वोत्तम विकल्प' : 'Best Net Realization'}
+                      <span>⭐</span> {isHi
+                        ? (rec.is_synthetic ? 'सर्वोत्तम डेमो अनुमान' : 'सर्वोत्तम विकल्प')
+                        : (rec.is_synthetic ? 'Best Demo Estimate' : 'Best Net Realization')}
                     </span>
                   )}
 
@@ -270,6 +276,11 @@ export default function MarketAdvisor() {
                         <h3 className="font-extrabold text-base text-slate-900 tracking-tight">
                           {rec.market}
                         </h3>
+                        {rec.is_synthetic && (
+                          <span className="rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-bold text-amber-900">
+                            {isHi ? 'डेमो डेटा' : 'DEMO DATA'}
+                          </span>
+                        )}
                         {rec.distance_km && (
                           <span className="text-[11px] font-medium text-slate-500 bg-slate-100 px-2 py-0.5 rounded-full">
                             📍 {rec.distance_km} km
@@ -294,7 +305,9 @@ export default function MarketAdvisor() {
                     {/* Net Realization Box */}
                     <div className="sm:text-right bg-emerald-50/60 sm:bg-transparent p-3 sm:p-0 rounded-2xl border border-emerald-100 sm:border-0">
                       <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wide block">
-                        {isHi ? 'अपेक्षित शुद्ध आय' : 'Est. Net Realization'}
+                        {isHi
+                          ? (rec.is_synthetic ? 'डेमो शुद्ध अनुमान' : 'अपेक्षित शुद्ध आय')
+                          : (rec.is_synthetic ? 'Demo Net Estimate' : 'Est. Net Realization')}
                       </span>
                       <div className="text-2xl font-black text-emerald-700">
                         ₹{rec.estimated_net_price?.toFixed(2)}
@@ -318,8 +331,10 @@ export default function MarketAdvisor() {
                     </div>
                     <div className="bg-slate-50 p-2 rounded-xl">
                       <span className="text-[10px] text-slate-400 block">{isHi ? 'डेटा ताजगी' : 'Freshness'}</span>
-                      <span className="font-bold text-emerald-700">
-                        {rec.data_freshness_days === 0 ? 'Today' : `${rec.data_freshness_days}d ago`}
+                      <span className={`font-bold ${rec.is_synthetic ? 'text-amber-800' : 'text-emerald-700'}`}>
+                        {rec.is_synthetic
+                          ? (isHi ? 'डेमो रिकॉर्ड' : 'Demo record')
+                          : (rec.data_freshness_days === 0 ? 'Today' : `${rec.data_freshness_days}d ago`)}
                       </span>
                     </div>
                   </div>
